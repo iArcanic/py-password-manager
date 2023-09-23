@@ -1,15 +1,28 @@
 import getpass
 import os
+import re
 
 passwords = {}
 
 # Function to add new password
 def add_password():
     service = input("Enter the name of the service or website: ")
-    password = getpass.getpass("Enter the password: ")
-    passwords[service] = password
-    print(f"Password for {service} added successfully.")
-    save_passwords()
+    
+    while True:
+        password = getpass.getpass("Enter the password: ")
+
+        if is_strong_password(password):
+            passwords[service] = password
+            print(f"Password for {service} added successfully.")
+            save_passwords()
+            break
+        else:
+            print("Password is weak. It should meet the criteria for a strong password.")
+            print("- At least 8 characters long")
+            print("- Contains at least one uppercase letter")
+            print("- Contains at least one lowercase letter")
+            print("- Contains at least one digit")
+            print("- Contains at least one special character (e.g., !@#$%^&*()_+{}[]:;<>,.?~\\-)")
 
 # Function to retrieve password
 def get_password():
@@ -49,6 +62,22 @@ def load_passwords():
         print("No saved passwords found.")
     except Exception as e:
         print(f"Error loading passwords: {e}")
+
+def is_strong_password(password):
+    # Define criteria
+    min_length = 8
+    max_length = 16
+    has_uppercase = re.search(r'[A-Z]', password)
+    has_lowercase = re.search(r'[a-z]', password)
+    has_digit = re.search(r'\d', password)
+    has_special_char = re.search(r'[!@#$%^&*()_+{}[\]:;<>,.?~\\-]', password)
+
+    # Check criteria
+    if (min_length <= len(password) <= max_length and
+        has_uppercase and has_lowercase and
+        has_digit and has_special_char):
+        return True
+    return False
 
 # Main program loop
 def main():
