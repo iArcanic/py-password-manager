@@ -11,7 +11,11 @@ def add_password():
 
 # Function to retrieve password
 def get_password():
-    pass
+    service = input("Enter the name of the service or website: ")
+    if service in passwords:
+        print(f"Password for {service}: {passwords[service]}")
+    else:
+        print(f"No password found for {service}.")
 
 # Function to list passwords
 def list_passwords():
