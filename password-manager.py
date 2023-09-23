@@ -19,7 +19,9 @@ def get_password():
 
 # Function to list passwords
 def list_passwords():
-    pass
+    print("Stored Passwords:")
+    for service, password in passwords.items():
+        print(f"{service}: {password}")
 
 # Main program loop
 def main():
