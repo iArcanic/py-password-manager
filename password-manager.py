@@ -1,8 +1,13 @@
 import getpass
 
+passwords = {}
+
 # Function to add new password
 def add_password():
-    pass
+    service = input("Enter the name of the service or website: ")
+    password = getpass.getpass("Enter the password: ")
+    passwords[service] = password
+    print(f"Password for {service} added successfully.")
 
 # Function to retrieve password
 def get_password():
