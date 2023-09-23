@@ -1,28 +1,43 @@
 import getpass
 import os
 import re
+import string
+import secrets
 
 passwords = {}
 
 # Function to add new password
 def add_password():
     service = input("Enter the name of the service or website: ")
-    
-    while True:
-        password = getpass.getpass("Enter the password: ")
 
-        if is_strong_password(password):
+    while True:
+        print("1. Enter your own password")
+        print("2. Generate a random password")
+
+        choice = int(input("Enter your choice: "))
+
+        if choice == 1:
+            password = getpass.getpass("Enter the password: ")
+            
+            if is_strong_password(password):
+                passwords[service] = password
+                print(f"Password for {service} added successfully.")
+                save_passwords()
+                break
+            else:
+                print("Password is weak. It should meet the criteria for a strong password.")
+                print("- At least 8 characters long")
+                print("- Contains at least one uppercase letter")
+                print("- Contains at least one lowercase letter")
+                print("- Contains at least one digit")
+                print("- Contains at least one special character (e.g., !@#$%^&*()_+{}[]:;<>,.?~\\-)")
+        elif choice == 2:
+            password = generate_random_password()
             passwords[service] = password
-            print(f"Password for {service} added successfully.")
-            save_passwords()
+            print(f"Randomly generated password for {service}: {password}")
             break
         else:
-            print("Password is weak. It should meet the criteria for a strong password.")
-            print("- At least 8 characters long")
-            print("- Contains at least one uppercase letter")
-            print("- Contains at least one lowercase letter")
-            print("- Contains at least one digit")
-            print("- Contains at least one special character (e.g., !@#$%^&*()_+{}[]:;<>,.?~\\-)")
+            print("Invalid choice. Please try again.")
 
 # Function to retrieve password
 def get_password():
@@ -79,6 +94,18 @@ def is_strong_password(password):
         return True
     return False
 
+def generate_random_password(length = 8):
+    # Define characters for generating the password
+    characters = string.ascii_letters + string.digits + string.punctuation
+
+    while True:
+        # Generate a random password of the specified length
+        password = ''.join(secrets.choice(characters) for _ in range(length))
+
+        # Check if the generated password meets the minimum criteria
+        if is_strong_password(password):
+            return password
+
 # Main program loop
 def main():
 
@@ -90,7 +117,8 @@ def main():
         print("1. Add Password")
         print("2. Get Password")
         print("3. List Passwords")
-        print("4. Quit")
+        print("4. Generate Random Password")
+        print("5. Quit")
 
         choice = int(input("Enter your choice: "))
 
@@ -101,6 +129,10 @@ def main():
         elif choice == 3:
             list_passwords()
         elif choice == 4:
+            length = int(input("Enter the length of the random password (minimum 8): "))
+            password = generate_random_password(length)
+            print(f"Generated random password: {password}")
+        elif choice == 5:
             break
         else:
             print("Invalid choice. Please try again.")
