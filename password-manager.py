@@ -5,6 +5,7 @@ import string
 import secrets
 import bcrypt
 import pyperclip
+from cryptography.fernet import Fernet
 
 passwords = {}
 
@@ -39,6 +40,22 @@ def verify_master_password():
     else:
         return True
 
+# Function to generate encryption key
+def generate_key():
+    return Fernet.generate_key()
+
+# Function to encrypt password
+def encrypt_password(password, key):
+    cipher_suite = Fernet(key)
+    encrypted_password = cipher_suite.encrypt(password.encode())
+    return encrypted_password
+
+# Function to decrypt password
+def decrypt_password(encrypted_password, key):
+    cipher_suite = Fernet(key)
+    decrypted_password = cipher_suite.decrypt(encrypted_password).decode()
+    return decrypted_password
+
 # Function to add new password
 def add_password():
     service = input("Enter the name of the service or website: ")
@@ -53,7 +70,9 @@ def add_password():
             password = getpass.getpass("Enter the password: ")
 
             if is_strong_password(password):
-                passwords[service] = password
+                key = generate_key()
+                encrypted_password = encrypt_password(password, key)
+                passwords[service] = (key, encrypted_password)
                 print(f"Password for {service} added successfully.")
                 save_passwords()
                 break
@@ -66,7 +85,9 @@ def add_password():
                 print("- Contains at least one special character (e.g., !@#$%^&*()_+{}[]:;<>,.?~\\-)")
         elif choice == 2:
             password = generate_random_password()
-            passwords[service] = password
+            key = generate_key()
+            encrypted_password = encrypt_password(password, key)
+            passwords[service] = (key, encrypted_password)
             print(f"Randomly generated password for {service}: {password}")
             break
         else:
@@ -76,15 +97,18 @@ def add_password():
 def get_password():
     service = input("Enter the name of the service or website: ")
     if service in passwords:
-        print(f"Password for {service}: {passwords[service]}")
+        key, encrypted_password = passwords[service]
+        decrypted_password = decrypt_password(encrypted_password, key)
+        print(f"Password for {service}: {decrypted_password}")
     else:
         print(f"No password found for {service}.")
 
 # Function to list passwords
 def list_passwords():
     print("Stored Passwords:")
-    for service, password in passwords.items():
-        print(f"{service}: {password}")
+    for service, (key, encrypted_password) in passwords.items():
+        decrypted_password = decrypt_password(encrypted_password, key)
+        print(f"{service}: {decrypted_password}")
 
 def save_passwords():
     try:
