@@ -4,6 +4,7 @@ import re
 import string
 import secrets
 import bcrypt
+import pyperclip
 
 passwords = {}
 
@@ -15,15 +16,22 @@ def setup_master_password():
         salt = bcrypt.gensalt()
         hashed_password = bcrypt.hashpw(master_password.encode(), salt)
 
-        with open('master_password.txt', 'wb') as file:
+        home_directory = os.path.expanduser("~")
+        file_path = os.path.join(home_directory, "master_password.txt")
+
+        with open(file_path, 'wb') as file:
             file.write(hashed_password)
     else:
         print("Master password already set up.")
 
 # Function to verify the master password
 def verify_master_password():
-    if os.path.exists('master_password.txt'):
-        with open('master_password.txt', 'rb') as file:
+
+    home_directory = os.path.expanduser("~")
+    file_path = os.path.join(home_directory, "master_password.txt")
+
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as file:
             stored_hashed_password = file.read()
 
         entered_password = getpass.getpass("Enter the master password: ")
@@ -131,10 +139,23 @@ def generate_random_password(length = 8):
         if is_strong_password(password):
             return password
 
+def copy_password_to_clipboard():
+    service = input("Enter the name of the service or website: ")
+
+    if service in passwords:
+        password = passwords[service]
+        pyperclip.copy(password)
+        print(f"Password for {service} copied to clipboard.")
+    else:
+        print(f"No password found for {service}.")
+
 # Main program loop
 def main():
 
-    if not os.path.exists('master_password.txt'):
+    home_directory = os.path.expanduser("~")
+    file_path = os.path.join(home_directory, "master_password.txt")
+
+    if not os.path.exists(file_path):
         setup_master_password()
 
     if verify_master_password():
@@ -146,7 +167,8 @@ def main():
             print("2. Get Password")
             print("3. List Passwords")
             print("4. Generate Random Password")
-            print("5. Quit")
+            print("5. Copy Password to Clipboard")
+            print("6. Quit")
 
             choice = int(input("Enter your choice: "))
 
@@ -161,6 +183,8 @@ def main():
                 password = generate_random_password(length)
                 print(f"Generated random password: {password}")
             elif choice == 5:
+                copy_password_to_clipboard()
+            elif choice == 6:
                 break
             else:
                 print("Invalid choice. Please try again.")
