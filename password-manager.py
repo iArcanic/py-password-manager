@@ -9,18 +9,27 @@ passwords = {}
 
 # Function to set up the master password
 def setup_master_password():
-    master_password = getpass.getpass("Create a master password: ")
-    salt = bcrypt.gensalt()
-    hashed_password = bcrypt.hashpw(master_password.encode(), salt)
-    with open('master_password.txt', 'wb') as file:
-        file.write(hashed_password)
+    if not os.path.exists('master_password.txt'):
+        master_password = getpass.getpass("Create a master password: ")
+
+        salt = bcrypt.gensalt()
+        hashed_password = bcrypt.hashpw(master_password.encode(), salt)
+
+        with open('master_password.txt', 'wb') as file:
+            file.write(hashed_password)
+    else:
+        print("Master password already set up.")
 
 # Function to verify the master password
 def verify_master_password():
-    with open('master_password.txt', 'rb') as file:
-        stored_hashed_password = file.read()
-    entered_password = getpass.getpass("Enter the master password: ")
-    return bcrypt.checkpw(entered_password.encode(), stored_hashed_password)
+    if os.path.exists('master_password.txt'):
+        with open('master_password.txt', 'rb') as file:
+            stored_hashed_password = file.read()
+
+        entered_password = getpass.getpass("Enter the master password: ")
+        return bcrypt.checkpw(entered_password.encode(), stored_hashed_password)
+    else:
+        return True
 
 # Function to add new password
 def add_password():
