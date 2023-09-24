@@ -3,8 +3,24 @@ import os
 import re
 import string
 import secrets
+import bcrypt
 
 passwords = {}
+
+# Function to set up the master password
+def setup_master_password():
+    master_password = getpass.getpass("Create a master password: ")
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(master_password.encode(), salt)
+    with open('master_password.txt', 'wb') as file:
+        file.write(hashed_password)
+
+# Function to verify the master password
+def verify_master_password():
+    with open('master_password.txt', 'rb') as file:
+        stored_hashed_password = file.read()
+    entered_password = getpass.getpass("Enter the master password: ")
+    return bcrypt.checkpw(entered_password.encode(), stored_hashed_password)
 
 # Function to add new password
 def add_password():
@@ -18,7 +34,7 @@ def add_password():
 
         if choice == 1:
             password = getpass.getpass("Enter the password: ")
-            
+
             if is_strong_password(password):
                 passwords[service] = password
                 print(f"Password for {service} added successfully.")
@@ -109,33 +125,38 @@ def generate_random_password(length = 8):
 # Main program loop
 def main():
 
-    # Load the existing passwords at the start
-    load_passwords()
+    if not os.path.exists('master_password.txt'):
+        setup_master_password()
 
-    while True:
-        print("Welcome to py-password-manager!")
-        print("1. Add Password")
-        print("2. Get Password")
-        print("3. List Passwords")
-        print("4. Generate Random Password")
-        print("5. Quit")
+    if verify_master_password():
+        load_passwords()
 
-        choice = int(input("Enter your choice: "))
+        while True:
+            print("Welcome to py-password-manager!")
+            print("1. Add Password")
+            print("2. Get Password")
+            print("3. List Passwords")
+            print("4. Generate Random Password")
+            print("5. Quit")
 
-        if choice == 1:
-            add_password()
-        elif choice == 2:
-            get_password()
-        elif choice == 3:
-            list_passwords()
-        elif choice == 4:
-            length = int(input("Enter the length of the random password (minimum 8): "))
-            password = generate_random_password(length)
-            print(f"Generated random password: {password}")
-        elif choice == 5:
-            break
-        else:
-            print("Invalid choice. Please try again.")
+            choice = int(input("Enter your choice: "))
+
+            if choice == 1:
+                add_password()
+            elif choice == 2:
+                get_password()
+            elif choice == 3:
+                list_passwords()
+            elif choice == 4:
+                length = int(input("Enter the length of the random password (minimum 8): "))
+                password = generate_random_password(length)
+                print(f"Generated random password: {password}")
+            elif choice == 5:
+                break
+            else:
+                print("Invalid choice. Please try again.")
+    else:
+        print("Invalid master password. Access denied.")
 
 if __name__ == "__main__":
     main()
