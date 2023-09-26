@@ -6,6 +6,7 @@ import secrets
 import bcrypt
 import pyperclip
 from cryptography.fernet import Fernet
+import json
 
 passwords = {}
 
@@ -89,6 +90,7 @@ def add_password():
             encrypted_password = encrypt_password(password, key)
             passwords[service] = (key, encrypted_password)
             print(f"Randomly generated password for {service}: {password}")
+            save_passwords()
             break
         else:
             print("Invalid choice. Please try again.")
@@ -111,25 +113,31 @@ def list_passwords():
         print(f"{service}: {decrypted_password}")
 
 def save_passwords():
+    home_directory = os.path.expanduser("~")
+    file_path = os.path.join(home_directory, 'passwords.txt')
+
     try:
-        home_directory = os.path.expanduser("~")
-        file_path = os.path.join(home_directory, 'passwords.txt')
         with open(file_path, 'w') as file:
-            for service, password in passwords.items():
-                file.write(f"{service}:{password}\n")
+            for service, (key, encrypted_password) in passwords.items():
+                file.write(f"{service}:{key.decode()}:{encrypted_password.decode()}\n")
         print("Passwords saved successfully.")
+
     except Exception as e:
         print(f"Error saving passwords: {e}")
 
 def load_passwords():
+    home_directory = os.path.expanduser("~")
+    file_path = os.path.join(home_directory, 'passwords.txt')
+
     try:
-        home_directory = os.path.expanduser("~")
-        file_path = os.path.join(home_directory, 'passwords.txt')
         with open(file_path, 'r') as file:
             for line in file:
-                service, password = line.strip().split(':')
-                passwords[service] = password
+                parts = line.strip().split(':')
+                if len(parts) == 3:
+                    service, key, encrypted_password = parts
+                    passwords[service] = (key.encode(), encrypted_password.encode())
         print("Passwords loaded successfully.")
+
     except FileNotFoundError:
         print("No saved passwords found.")
     except Exception as e:
